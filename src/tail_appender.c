@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 	fseek(target, 0L, SEEK_END);
 	size_t target_length = ftell(target);
 	printf("Appending %s to %s\n", argv[2], argv[1]);
-	printf("Base target binary size (without tail) is: %d\n", target_length);
+	printf("Base target binary size (without tail) is: %ld\n", target_length);
 	
 	// Appending data
 	while (!feof(datafile)) {
@@ -40,5 +40,5 @@ int main(int argc, char** argv) {
 	fwrite(&target_length, sizeof(size_t), 1, target);
 	
 	fclose(target);
-	printf("Appending done\n", target_length);
+	printf("Appending done\n");
 }

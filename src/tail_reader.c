@@ -21,15 +21,14 @@ int main(int argc, char** argv) {
 	// Reading the base size
 	size_t data_start;
 	fread(&data_start, sizeof(size_t), 1, self);
-	printf("Tail data starts at: %d\n", data_start);
+	printf("Tail data starts at: %ld\n", data_start);
 	
 	// Going to the base-size offset
 	fseek(self, data_start, SEEK_SET);
 	size_t data_length = data_end - data_start;
-	printf("Tail data length is: %d\n", data_length);
 	
 	char* data = (char*)malloc(data_length + 1);
 	fread(data, 1, data_length, self);
 	data[data_length] = 0;
-	printf("Tail data: \"%s\"", data);
+	printf("Tail data: \"%s\" (%ld bytes)\n", data, data_length);
 }
