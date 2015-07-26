@@ -4,6 +4,8 @@
 
 #define MAGIC_LENGTH		4
 
+#define BUF_SIZE			8
+
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		printf("Usage: %s <target_binary_name> <tail_data_file_name>\n", argv[0]);
@@ -15,15 +17,16 @@ int main(int argc, char** argv) {
 	
 	fseek(target, 0L, SEEK_END);
 	size_t target_length = ftell(target);
-	printf("Appending %s to %s\n", argv[2], argv[1]);
-	printf("Base target binary size (without tail) is: %ld\n", target_length);
+	printf("Appending %s to %s at 0x%X\n", argv[2], argv[1], target_length);
 	
 	// Appending data
+	size_t size = 0;
 	while (!feof(datafile)) {
-		char buf;
-		fread(&buf, 1, 1, datafile);
-		if (!feof(datafile)) {
-			fwrite(&buf, 1, 1, target);
+		char buf[BUF_SIZE];
+		size_t rs = fread(&buf, 1, BUF_SIZE, datafile);
+		if (rs > 0) {
+			fwrite(&buf, 1, rs, target);
+			size += rs;
 		}
 	}
 	fclose(datafile);
@@ -40,5 +43,5 @@ int main(int argc, char** argv) {
 	fwrite(&target_length, sizeof(size_t), 1, target);
 	
 	fclose(target);
-	printf("Appending done\n");
+	printf("Appended %ld bytes\n", size);
 }

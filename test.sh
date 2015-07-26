@@ -6,14 +6,14 @@ else
   export SUFFIX=
 fi
 
-mkdir -p target
-
-gcc src/tail_reader.c -o target/tail_reader.base
-gcc src/tail_appender.c -o target/tail_appender
-
 mkdir -p target/test
 
+echo "=== APPENDING TAILS ==="
 cp target/tail_reader.base target/test/tailed1${SUFFIX}
 target/tail_appender${SUFFIX} target/test/tailed1${SUFFIX} test/tail1.txt
 cp target/tail_reader.base target/test/tailed2${SUFFIX}
 target/tail_appender${SUFFIX} target/test/tailed2${SUFFIX} test/tail2.txt
+
+echo "=== RUNING TARGETS ==="
+target/test/tailed1
+target/test/tailed2

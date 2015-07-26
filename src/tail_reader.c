@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 	// Reading the base size
 	size_t data_start;
 	fread(&data_start, sizeof(size_t), 1, self);
-	printf("Tail data starts at: %ld\n", data_start);
+	printf("Tail found at 0x%X\n", data_start);
 	
 	// Going to the base-size offset
 	fseek(self, data_start, SEEK_SET);
