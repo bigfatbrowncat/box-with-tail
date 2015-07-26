@@ -1,9 +1,9 @@
 #!/bin/sh
 
 if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-  set SUFFIX=.exe
+  export SUFFIX=.exe
 else
-  set SUFFIX=
+  export SUFFIX=
 fi
 
 mkdir -p target
