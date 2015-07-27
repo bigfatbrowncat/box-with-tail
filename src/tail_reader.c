@@ -28,7 +28,6 @@ int init_tail(int argc, char** argv) {
 	fread(&tail_data_start, sizeof(size_t), 1, tail_self);
 	tail_data_length = data_end - tail_data_start;
 	
-	fclose(tail_self);
 	return TAIL_SUCCESS;
 
 }

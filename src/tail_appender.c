@@ -17,8 +17,12 @@ int main(int argc, char** argv) {
 	
 	fseek(target, 0L, SEEK_END);
 	size_t target_length = ftell(target);
+#ifdef __APPLE__
 	printf("Appending %s to %s at 0x%zX\n", argv[2], argv[1], target_length);
-	
+#else
+	printf("Appending %s to %s at 0x%X\n", argv[2], argv[1], target_length);
+#endif
+
 	// Appending data
 	size_t size = 0;
 	while (!feof(datafile)) {
