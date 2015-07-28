@@ -5,44 +5,75 @@
 
 #define TAIL_MAGIC_LENGTH		4
 
-size_t tail_data_start, tail_data_length;
-FILE* tail_self = NULL;
+int tail_error;
 
-int tail_open(char* binary_name) {
-	if (tail_self != NULL) {
-		return TAIL_ALREADY_OPENED;
-	}
-	tail_self = fopen(binary_name, "rb");
-	
-	fseek(tail_self, -(int)sizeof(size_t) - TAIL_MAGIC_LENGTH, SEEK_END);
-	size_t data_end = ftell(tail_self);
+struct _tail_t {
+	FILE* file;
+	size_t tail_data_start;
+	size_t tail_data_length;
+};
+
+int tail_prepare_reading(tail_t tail) {
+	fseek(tail->file, tail->tail_data_start - (int)sizeof(size_t) - TAIL_MAGIC_LENGTH, SEEK_SET);
+	size_t data_end = ftell(tail->file);
 	
 	// Checking magic
 	char magic[TAIL_MAGIC_LENGTH];
-	fread(&magic, 1, TAIL_MAGIC_LENGTH, tail_self);
+	fread(&magic, 1, TAIL_MAGIC_LENGTH, tail->file);
 	if (magic[0] != 'T' || magic[1] != 'A' || magic[2] != 'I' || magic[3] != 'L') {
-		//
-		return TAIL_NOT_FOUND;
+		return 0;
 	}
 	
 	// Reading the base size
-	fread(&tail_data_start, sizeof(size_t), 1, tail_self);
-	tail_data_length = data_end - tail_data_start;
+	size_t data_start;
+	fread(&data_start, sizeof(size_t), 1, tail->file);
+	size_t tail_data_length = data_end - data_start;
 	
-	return TAIL_SUCCESS;
-
+	tail_error = TAIL_SUCCESS;
+	
+	tail->tail_data_start = data_start;
+	tail->tail_data_length = tail_data_length;
+	return 1;
 }
 
-size_t tail_get_length() {
-	return tail_data_length;
+// Public functions
+
+tail_t tail_open(char* binary_name) {
+	FILE* file = fopen(binary_name, "rb");
+	if (file == NULL) {
+		tail_error = TAIL_FILE_NOT_FOUND;
+		return NULL;
+	}
+	
+	fseek(file, 0, SEEK_END);
+
+	tail_t res = (tail_t)malloc(sizeof(struct _tail_t));
+	res->tail_data_start = ftell(file);
+	res->file = file;
+	if (tail_prepare_reading(res) == 0) {
+		free(res);
+		res = NULL;
+	}
+	return res;
 }
 
-void tail_read(char* ptr) {
+int tail_get_error() {
+	return tail_error;
+}
+
+size_t tail_get_length(tail_t tail) {
+	return tail->tail_data_length;
+}
+
+int tail_read_previous(tail_t tail, char* ptr) {
 	// Going to the base-size offset
-	fseek(tail_self, tail_data_start, SEEK_SET);
-	fread(ptr, 1, tail_data_length, tail_self);
+	fseek(tail->file, tail->tail_data_start, SEEK_SET);
+	fread(ptr, 1, tail->tail_data_length, tail->file);
+	
+	return tail_prepare_reading(tail);
 }
 
-void tail_close() {
-	fclose(tail_self);
+void tail_close(tail_t tail) {
+	fclose(tail->file);
+	free(tail);
 }
